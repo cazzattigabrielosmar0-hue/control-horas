@@ -812,3 +812,47 @@ textarea {
   background: var(--card-borde);
   border-radius: 4px;
 }
+/* ---------- Acciones sobre un turno (editar / eliminar) ---------- */
+
+.acciones-detalle {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.btn-editar,
+.btn-eliminar,
+.btn-guardar-edicion,
+.btn-cancelar {
+  flex: 1;
+  padding: 10px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid;
+}
+
+.btn-editar {
+  background: transparent;
+  color: var(--azul-claro);
+  border-color: var(--azul);
+}
+
+.btn-eliminar {
+  background: transparent;
+  color: var(--rojo);
+  border-color: var(--rojo);
+}
+
+.btn-guardar-edicion {
+  background: var(--azul);
+  color: #fff;
+  border-color: var(--azul);
+}
+
+.btn-cancelar {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: var(--card-border);
+}
