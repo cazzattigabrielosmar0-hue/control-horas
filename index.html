@@ -3,278 +3,106 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Control de Horas</title>
+<title>Control de horas</title>
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
 
 <div class="app">
 
-  <!-- ===== HEADER ===== -->
-  <header class="app-header">
-    <div class="header-left">
-      <div class="logo-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"></path><path d="M9 12l2 2 4-4"></path></svg>
+  <div class="tabs">
+    <button id="tabTurno" class="tab active">Turno</button>
+    <button id="tabHistorial" class="tab">Historial</button>
+  </div>
+
+  <!-- ===== PANTALLA: NUEVO TURNO ===== -->
+  <section id="pantallaTurno" class="pantalla">
+
+    <h2>Nuevo turno</h2>
+
+    <label>Lugar / objetivo</label>
+    <input type="text" id="lugar" placeholder="Ej: Edificio San Martín">
+
+    <label>Fecha</label>
+    <input type="date" id="fecha">
+
+    <div class="fila">
+      <div>
+        <label>Hora entrada</label>
+        <input type="time" id="horaEntrada" value="20:00">
       </div>
-      <div class="header-textos">
-        <h1>Control de Horas</h1>
-        <p id="headerSubtitle">Registro de turno</p>
+      <div>
+        <label>Hora salida</label>
+        <input type="time" id="horaSalida" value="06:00">
       </div>
     </div>
-    <button class="header-action" id="btnHeaderClock" title="Ver historial">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path></svg>
-    </button>
-  </header>
 
-  <!-- ===== CONTENEDOR DE PANTALLAS ===== -->
-  <main class="screens">
-
-    <!-- ---------- INICIO ---------- -->
-    <section id="pantallaInicio" class="pantalla">
-
-      <div class="card">
-        <div class="field">
-          <label><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s7-6.5 7-12A7 7 0 0 0 5 10c0 5.5 7 12 7 12Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg> Lugar / Objetivo</label>
-          <input type="text" id="lugar" placeholder="Ej: Edificio Corporativo Sur">
-        </div>
-        <div class="field">
-          <label><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 9h18M8 3v4M16 3v4"></path></svg> Fecha</label>
-          <input type="date" id="fecha">
-        </div>
-        <div class="field-row two">
-          <div class="field">
-            <label class="label-verde"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path></svg> Hora de entrada</label>
-            <input type="time" id="horaEntrada" value="20:00">
-          </div>
-          <div class="field">
-            <label class="label-rojo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path></svg> Hora de salida</label>
-            <input type="time" id="horaSalida" value="06:00">
-          </div>
-        </div>
-
-        <div class="stats-row" id="resultado" style="display:none">
-          <div class="stat-box">
-            <span class="stat-label">Total trabajado</span>
-            <strong class="stat-value azul" id="totalTurno">0:00</strong>
-            <span class="stat-sub">hh:mm</span>
-          </div>
-          <div class="stat-box">
-            <span class="stat-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"></path></svg> Nocturnas</span>
-            <strong class="stat-value violeta" id="horasNocturnas">0:00</strong>
-            <span class="stat-sub">Desde las 22:00</span>
-          </div>
-          <div class="stat-box">
-            <span class="stat-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.9 6.3L22 9l-5 4.9 1.2 6.9L12 17.8 5.8 20.8 7 13.9 2 9l7.1-.7L12 2Z"></path></svg> Extra</span>
-            <strong class="stat-value naranja" id="horasExtraPreview">0:00</strong>
-            <span class="stat-sub">Sobre 48 hs semanales</span>
-          </div>
-        </div>
+    <div class="resultado" id="resultado" style="display:none">
+      <div class="fila-resultado">
+        <span>Total del turno</span>
+        <strong id="totalTurno">0 hs</strong>
       </div>
-
-      <div class="card">
-        <div class="card-title-row">
-          <span class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Z"></path><path d="M14 3v6h6"></path></svg> Nota del turno</span>
-          <button class="btn-ghost-sm" id="btnVerNotas">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Z"></path><path d="M14 3v6h6"></path></svg>
-            Ver notas
-          </button>
-        </div>
-        <textarea id="nota" maxlength="300" placeholder="Agregar nota o procedimiento..."></textarea>
-        <div class="char-count"><span id="notaCount">0</span>/300</div>
+      <div class="fila-resultado sub">
+        <span>Horas nocturnas (22 a 6)</span>
+        <strong id="horasNocturnas">0 hs</strong>
       </div>
+    </div>
 
-      <div class="botones-accion">
-        <button id="btnGuardarTurno" class="btn-principal">Guardar turno</button>
-        <button id="btnGuardarFranco" class="btn-secundario">Marcar este día como franco</button>
+    <div id="avisoExtra" class="aviso" style="display:none"></div>
+
+    <div class="caja-pregunta">
+      <label class="check">
+        <input type="checkbox" id="pasoAlgo">
+        ¿Pasó algo en el turno?
+      </label>
+      <textarea id="nota" placeholder="Contá qué pasó (obligatorio si marcaste que pasó algo)" style="display:none"></textarea>
+    </div>
+
+    <button id="btnGuardarTurno" class="btn-principal">Guardar turno</button>
+    <button id="btnGuardarFranco" class="btn-secundario">Marcar este día como franco</button>
+
+    <h3>Resumen</h3>
+    <div class="grid-resumen">
+      <div class="metrica">
+        <span>Horas semana</span>
+        <strong id="resHorasSemana">0</strong>
       </div>
-
-      <div class="card">
-        <span class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"></path><path d="M7 16v-4M12 16V8M17 16v-7"></path></svg> Resumen</span>
-        <div class="resumen-grid">
-          <div class="metric">
-            <svg class="metric-icon verde" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path></svg>
-            <span class="metric-label">Horas semanales</span>
-            <strong class="metric-value verde" id="resHorasSemana">0:00</strong>
-            <span class="metric-sub">de 48:00</span>
-            <div class="progress-bar"><div class="progress-fill" id="resBarraSemana"></div></div>
-          </div>
-          <div class="metric">
-            <svg class="metric-icon naranja" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.9 6.3L22 9l-5 4.9 1.2 6.9L12 17.8 5.8 20.8 7 13.9 2 9l7.1-.7L12 2Z"></path></svg>
-            <span class="metric-label">Extra semanales</span>
-            <strong class="metric-value naranja" id="resExtraSemana">0:00</strong>
-            <span class="metric-sub">sobre 48:00</span>
-          </div>
-          <div class="metric">
-            <svg class="metric-icon azul" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 9h18M8 3v4M16 3v4"></path></svg>
-            <span class="metric-label">Horas del mes</span>
-            <strong class="metric-value azul" id="resHorasMes">0:00</strong>
-            <span class="metric-sub">Total acumulado</span>
-          </div>
-          <div class="metric">
-            <svg class="metric-icon rosa" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22V12M12 12c0-5 4-9 9-9-1 5-4 9-9 9ZM12 12C12 7 8 3 3 3c1 5 4 9 9 9Z"></path></svg>
-            <span class="metric-label">Francos</span>
-            <strong class="metric-value rosa" id="resFrancosMes">0</strong>
-            <span class="metric-sub">Este mes</span>
-          </div>
-        </div>
+      <div class="metrica">
+        <span>Extra semana</span>
+        <strong id="resExtraSemana">0</strong>
       </div>
-
-      <div class="card">
-        <div class="card-title-row">
-          <span class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7M3 5v6h6"></path></svg> Historial de turnos</span>
-          <button class="link-btn" id="btnVerTodos">Ver todos</button>
-        </div>
-        <div id="historialPreview"></div>
+      <div class="metrica">
+        <span>Horas del mes</span>
+        <strong id="resHorasMes">0</strong>
       </div>
-
-    </section>
-
-    <!-- ---------- RESUMEN ---------- -->
-    <section id="pantallaResumen" class="pantalla oculta">
-
-      <div class="card mes-selector">
-        <button class="btn-icon" id="resMesPrev">‹</button>
-        <span id="resMesLabel">-</span>
-        <button class="btn-icon" id="resMesNext">›</button>
+      <div class="metrica">
+        <span>Francos del mes</span>
+        <strong id="resFrancosMes">0</strong>
       </div>
+    </div>
 
-      <div class="card destacado">
-        <span class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path></svg> Horas de esta semana</span>
-        <strong class="big-value verde" id="rHorasSemana">0:00</strong>
-        <span class="metric-sub">de 48:00 hs</span>
-        <div class="progress-bar lg"><div class="progress-fill" id="rBarraSemana"></div></div>
-      </div>
+  </section>
 
-      <div class="resumen-grid">
-        <div class="metric">
-          <span class="metric-label">Horas del mes</span>
-          <strong class="metric-value azul" id="rHorasMes">0:00</strong>
-          <span class="metric-sub">Total acumulado</span>
-        </div>
-        <div class="metric">
-          <span class="metric-label">Horas nocturnas del mes</span>
-          <strong class="metric-value violeta" id="rNocturnasMes">0:00</strong>
-          <span class="metric-sub">22:00 a 06:00</span>
-        </div>
-        <div class="metric">
-          <span class="metric-label">Extra semanales (mes)</span>
-          <strong class="metric-value naranja" id="rExtraSemanalMes">0:00</strong>
-          <span class="metric-sub">sobre 48 hs/semana</span>
-        </div>
-        <div class="metric">
-          <span class="metric-label">Extra diarias (mes)</span>
-          <strong class="metric-value naranja" id="rExtraDiariaMes">0:00</strong>
-          <span class="metric-sub">sobre 8 hs/día</span>
-        </div>
-        <div class="metric">
-          <span class="metric-label">Francos</span>
-          <strong class="metric-value rosa" id="rFrancosMes">0</strong>
-          <span class="metric-sub">Este mes</span>
-        </div>
-      </div>
+  <!-- ===== PANTALLA: HISTORIAL ===== -->
+  <section id="pantallaHistorial" class="pantalla oculta">
 
-      <div class="card">
-        <p class="texto-ayuda">Las horas extra semanales y diarias se muestran por separado para que no se cuenten dos veces. Mirá el detalle de cada turno en el Historial.</p>
-      </div>
+    <h2>Historial</h2>
 
-    </section>
+    <div class="fila">
+      <input type="date" id="filtroDesde">
+      <input type="date" id="filtroHasta">
+    </div>
+    <input type="text" id="filtroLugar" placeholder="Buscar por lugar...">
 
-    <!-- ---------- HISTORIAL ---------- -->
-    <section id="pantallaHistorial" class="pantalla oculta">
+    <button id="btnExportarPDF" class="btn-secundario">Exportar a PDF</button>
 
-      <div id="avisoSoloNotas" class="aviso-banner" style="display:none">
-        <span>Mostrando solo turnos con nota</span>
-        <button id="btnQuitarFiltroNotas">Quitar filtro</button>
-      </div>
+    <div id="listaHistorial" class="lista-historial"></div>
 
-      <div class="card filtros">
-        <div class="field-row two">
-          <input type="date" id="filtroDesde">
-          <input type="date" id="filtroHasta">
-        </div>
-        <input type="text" id="filtroLugar" placeholder="Buscar por lugar...">
-      </div>
+    <div id="detalleTurno" class="detalle-turno" style="display:none"></div>
 
-      <div id="listaHistorial" class="lista-historial"></div>
-
-      <div id="detalleTurno" class="card detalle-turno oculta" style="display:none"></div>
-
-    </section>
-
-    <!-- ---------- CALENDARIO ---------- -->
-    <section id="pantallaCalendario" class="pantalla oculta">
-
-      <div class="card mes-selector">
-        <button class="btn-icon" id="calMesPrev">‹</button>
-        <span id="calMesLabel">-</span>
-        <button class="btn-icon" id="calMesNext">›</button>
-      </div>
-
-      <div class="card">
-        <div class="cal-weekdays">
-          <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
-        </div>
-        <div class="cal-grid" id="calGrid"></div>
-        <div class="cal-leyenda">
-          <span><i class="dot azul"></i> Turno</span>
-          <span><i class="dot rosa"></i> Franco</span>
-          <span><i class="dot naranja"></i> Extra</span>
-        </div>
-      </div>
-
-      <div class="card" id="calDetalleDia" style="display:none">
-        <span class="card-title" id="calDetalleFecha"></span>
-        <div id="calDetalleLista" style="margin-top:8px"></div>
-      </div>
-
-    </section>
-
-    <!-- ---------- AJUSTES ---------- -->
-    <section id="pantallaAjustes" class="pantalla oculta">
-
-      <div class="card">
-        <span class="card-title">Tus datos</span>
-        <p class="texto-ayuda" style="margin:8px 0 14px">Los turnos se guardan únicamente en este celular, no se suben a ningún servidor.</p>
-        <button class="btn-peligro" id="btnBorrarTodo">Borrar todos los datos</button>
-      </div>
-
-      <div class="card">
-        <span class="card-title">Acerca de</span>
-        <p class="texto-ayuda" style="margin-top:8px">Control de Horas — v2.0</p>
-      </div>
-
-      <div class="card disabled-card">
-        <span class="card-title">Próximamente</span>
-        <p class="texto-ayuda" style="margin-top:8px">Panel para empleadores, múltiples trabajadores y verificación por ubicación. Todavía no disponible en esta versión.</p>
-      </div>
-
-    </section>
-
-  </main>
-
-  <!-- ===== NAVEGACIÓN INFERIOR ===== -->
-  <nav class="bottom-nav">
-    <button class="nav-item active" data-screen="inicio">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8"></path><path d="M5 10v10h14V10"></path></svg>
-      <span>Inicio</span>
-    </button>
-    <button class="nav-item" data-screen="resumen">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"></path><path d="M7 16v-4M12 16V8M17 16v-7"></path></svg>
-      <span>Resumen</span>
-    </button>
-    <button class="nav-fab" id="btnNuevoTurno" title="Nuevo turno">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"></path></svg>
-    </button>
-    <button class="nav-item" data-screen="calendario">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 9h18M8 3v4M16 3v4"></path></svg>
-      <span>Calendario</span>
-    </button>
-    <button class="nav-item" data-screen="ajustes">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"></path></svg>
-      <span>Ajustes</span>
-    </button>
-  </nav>
+  </section>
 
 </div>
 
