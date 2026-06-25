@@ -30,7 +30,7 @@ function calcularHoras(fecha, horaEntrada, horaSalida) {
 
 // Suma las horas que caen entre las 22:00 y las 06:00, día por día.
 // Arrancamos a revisar desde un día ANTES del inicio del turno, porque
-// si el turno empieza de madrugada (ej: 05:00), esas horas pertenecen
+// si el turno empieza de madrugada (ej: 00:30 o 05:00), esas horas pertenecen
 // a la franja nocturna que arrancó el día anterior a las 22:00.
 function calcularHorasNocturnas(inicio, fin) {
   let total = 0;
@@ -106,6 +106,7 @@ const elHoraSalida = document.getElementById("horaSalida");
 const elResultado = document.getElementById("resultado");
 const elTotalTurno = document.getElementById("totalTurno");
 const elHorasNocturnas = document.getElementById("horasNocturnas");
+const elHorasExtraTurno = document.getElementById("horasExtraTurno");
 const elAvisoExtra = document.getElementById("avisoExtra");
 const elPasoAlgo = document.getElementById("pasoAlgo");
 const elNota = document.getElementById("nota");
@@ -125,15 +126,18 @@ function actualizarVistaPrevia() {
   elTotalTurno.textContent = redondear(totalHoras) + " hs";
   elHorasNocturnas.textContent = redondear(horasNocturnas) + " hs";
 
-  // Aviso de horas extra: simula sumar este turno a la semana
+  // Simula sumar este turno a la semana, para mostrar la extra y el aviso
   const turnos = cargarTurnos();
   const resumen = calcularResumen(turnos, fecha);
   const semanaConEsteTurno = resumen.horasSemana + totalHoras;
-  if (semanaConEsteTurno > 48) {
+  const extra = Math.max(0, semanaConEsteTurno - 48);
+  elHorasExtraTurno.textContent = redondear(extra) + " hs";
+
+  if (extra > 0) {
     elAvisoExtra.style.display = "block";
     elAvisoExtra.textContent =
       "Con este turno superás las 48 hs semanales: " +
-      redondear(semanaConEsteTurno - 48) + " hs extra";
+      redondear(extra) + " hs extra";
   } else {
     elAvisoExtra.style.display = "none";
   }
@@ -217,6 +221,9 @@ function actualizarResumen() {
   document.getElementById("resExtraSemana").textContent = redondear(resumen.extraSemana);
   document.getElementById("resHorasMes").textContent = redondear(resumen.horasMes);
   document.getElementById("resFrancosMes").textContent = resumen.francosMes;
+
+  const pct = Math.min(100, (resumen.horasSemana / 48) * 100);
+  document.getElementById("barraSemana").style.width = pct + "%";
 }
 
 // ============================================
@@ -255,7 +262,7 @@ function renderizarHistorial() {
   elDetalleTurno.style.display = "none";
 
   if (filtrados.length === 0) {
-    elListaHistorial.innerHTML = "<p style='color:#888;font-size:13px'>No hay turnos en este rango.</p>";
+    elListaHistorial.innerHTML = "<p style='color:#8B96AA;font-size:13px'>No hay turnos en este rango.</p>";
     return;
   }
 
@@ -267,12 +274,19 @@ function renderizarHistorial() {
       item.innerHTML = `
         <div class="info">
           <p class="titulo">${t.fecha} · Franco</p>
+        </div>
+        <div class="item-derecha">
+          <span class="chevron">›</span>
         </div>`;
     } else {
       item.innerHTML = `
         <div class="info">
           <p class="titulo">${t.fecha} · ${t.lugar}</p>
-          <p class="sub">${t.entrada} a ${t.salida} · ${t.totalHoras} hs · ${t.horasNocturnas} hs nocturnas</p>
+          <p class="sub">${t.entrada} a ${t.salida} · ${t.horasNocturnas} hs nocturnas</p>
+        </div>
+        <div class="item-derecha">
+          <span class="badge-horas">${t.totalHoras} hs</span>
+          <span class="chevron">›</span>
         </div>`;
     }
 
@@ -281,22 +295,152 @@ function renderizarHistorial() {
   });
 }
 
+// ---------- Detalle, edición y borrado de un turno ----------
+
 function mostrarDetalle(t) {
   elDetalleTurno.style.display = "block";
+
   if (t.franco) {
-    elDetalleTurno.innerHTML = `<p><strong>${t.fecha}</strong> · Franco</p>`;
-    return;
-  }
-  let html = `
-    <p><strong>${t.fecha} · ${t.lugar}</strong></p>
-    <p style="font-size:13px;color:#666">${t.entrada} a ${t.salida} · ${t.totalHoras} hs totales · ${t.horasNocturnas} hs nocturnas</p>
-  `;
-  if (t.pasoAlgo && t.nota) {
-    html += `<div class="nota">${t.nota}</div>`;
+    elDetalleTurno.innerHTML = `
+      <p><strong>${t.fecha}</strong> · Franco</p>
+      <div class="acciones-detalle">
+        <button class="btn-eliminar" id="btnEliminarTurno">Eliminar</button>
+      </div>`;
   } else {
-    html += `<p style="font-size:13px;color:#888">Sin novedades anotadas en este turno.</p>`;
+    let html = `
+      <p><strong>${t.fecha} · ${t.lugar}</strong></p>
+      <p style="font-size:13px;color:#8B96AA">${t.entrada} a ${t.salida} · ${t.totalHoras} hs totales · ${t.horasNocturnas} hs nocturnas</p>
+    `;
+    if (t.pasoAlgo && t.nota) {
+      html += `<div class="nota">${t.nota}</div>`;
+    } else {
+      html += `<p style="font-size:13px;color:#8B96AA">Sin novedades anotadas en este turno.</p>`;
+    }
+    html += `
+      <div class="acciones-detalle">
+        <button class="btn-editar" id="btnEditarTurno">Editar</button>
+        <button class="btn-eliminar" id="btnEliminarTurno">Eliminar</button>
+      </div>`;
+    elDetalleTurno.innerHTML = html;
   }
-  elDetalleTurno.innerHTML = html;
+
+  document.getElementById("btnEliminarTurno").addEventListener("click", () => eliminarTurno(t.id));
+  const btnEditar = document.getElementById("btnEditarTurno");
+  if (btnEditar) {
+    btnEditar.addEventListener("click", () => mostrarFormularioEdicion(t));
+  }
+}
+
+function eliminarTurno(id) {
+  const confirmar = confirm("¿Seguro que querés eliminar este turno? No se puede deshacer.");
+  if (!confirmar) return;
+
+  const turnos = cargarTurnos().filter(t => t.id !== id);
+  guardarTurnos(turnos);
+
+  elDetalleTurno.style.display = "none";
+  renderizarHistorial();
+  actualizarResumen();
+}
+
+function mostrarFormularioEdicion(t) {
+  if (t.franco) {
+    elDetalleTurno.innerHTML = `
+      <label class="field-label">Fecha</label>
+      <input type="date" id="editFecha" value="${t.fecha}">
+      <div class="acciones-detalle">
+        <button class="btn-guardar-edicion" id="btnGuardarEdicion">Guardar cambios</button>
+        <button class="btn-cancelar" id="btnCancelarEdicion">Cancelar</button>
+      </div>`;
+  } else {
+    elDetalleTurno.innerHTML = `
+      <label class="field-label">Lugar / objetivo</label>
+      <input type="text" id="editLugar" value="${t.lugar}">
+
+      <label class="field-label">Fecha</label>
+      <input type="date" id="editFecha" value="${t.fecha}">
+
+      <div class="fila">
+        <div>
+          <label class="field-label entrada">Hora entrada</label>
+          <input type="time" id="editEntrada" value="${t.entrada}">
+        </div>
+        <div>
+          <label class="field-label salida">Hora salida</label>
+          <input type="time" id="editSalida" value="${t.salida}">
+        </div>
+      </div>
+
+      <label class="check" style="margin-top:14px">
+        <input type="checkbox" id="editPasoAlgo" ${t.pasoAlgo ? "checked" : ""}>
+        <span class="check-box"></span>
+        ¿Pasó algo en el turno?
+      </label>
+      <textarea id="editNota" placeholder="Contá qué pasó" style="display:${t.pasoAlgo ? "block" : "none"}">${t.nota || ""}</textarea>
+
+      <div class="acciones-detalle">
+        <button class="btn-guardar-edicion" id="btnGuardarEdicion">Guardar cambios</button>
+        <button class="btn-cancelar" id="btnCancelarEdicion">Cancelar</button>
+      </div>`;
+
+    document.getElementById("editPasoAlgo").addEventListener("change", (e) => {
+      document.getElementById("editNota").style.display = e.target.checked ? "block" : "none";
+    });
+  }
+
+  document.getElementById("btnGuardarEdicion").addEventListener("click", () => guardarEdicion(t));
+  document.getElementById("btnCancelarEdicion").addEventListener("click", () => mostrarDetalle(t));
+}
+
+function guardarEdicion(tOriginal) {
+  const turnos = cargarTurnos();
+  const idx = turnos.findIndex(x => x.id === tOriginal.id);
+  if (idx === -1) return;
+
+  if (tOriginal.franco) {
+    const nuevaFecha = document.getElementById("editFecha").value;
+    if (!nuevaFecha) {
+      alert("Completá la fecha.");
+      return;
+    }
+    turnos[idx].fecha = nuevaFecha;
+  } else {
+    const lugar = document.getElementById("editLugar").value.trim();
+    const fecha = document.getElementById("editFecha").value;
+    const entrada = document.getElementById("editEntrada").value;
+    const salida = document.getElementById("editSalida").value;
+    const pasoAlgo = document.getElementById("editPasoAlgo").checked;
+    const nota = document.getElementById("editNota").value.trim();
+
+    if (!lugar || !fecha || !entrada || !salida) {
+      alert("Completá lugar, fecha, hora de entrada y hora de salida.");
+      return;
+    }
+    if (pasoAlgo && !nota) {
+      alert("Marcaste que pasó algo: contá qué pasó en la nota.");
+      return;
+    }
+
+    const { totalHoras, horasNocturnas } = calcularHoras(fecha, entrada, salida);
+
+    turnos[idx] = {
+      ...turnos[idx],
+      lugar,
+      fecha,
+      entrada,
+      salida,
+      totalHoras: redondear(totalHoras),
+      horasNocturnas: redondear(horasNocturnas),
+      pasoAlgo,
+      nota: pasoAlgo ? nota : ""
+    };
+  }
+
+  guardarTurnos(turnos);
+  renderizarHistorial();
+  actualizarResumen();
+  mostrarDetalle(turnos[idx]);
+  alert("Turno actualizado.");
 }
 
 [elFiltroDesde, elFiltroHasta, elFiltroLugar].forEach(el =>
