@@ -12,49 +12,97 @@
 
 <div class="app">
 
-  <div class="tabs">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2l8 3v6c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V5l8-3z"/>
+          <circle cx="12" cy="11" r="2.2"/>
+          <path d="M12 13.2v2.3"/>
+        </svg>
+      </span>
+      <div>
+        <h1>Control de Horas</h1>
+        <p class="brand-sub">Seguimiento de turnos</p>
+      </div>
+    </div>
+    <span class="brand-clock" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M12 7v5l3 2"/>
+      </svg>
+    </span>
+  </header>
+
+  <nav class="tabs">
     <button id="tabTurno" class="tab active">Turno</button>
     <button id="tabHistorial" class="tab">Historial</button>
-  </div>
+  </nav>
 
   <!-- ===== PANTALLA: NUEVO TURNO ===== -->
   <section id="pantallaTurno" class="pantalla">
 
-    <h2>Nuevo turno</h2>
+    <div class="card">
+      <h2 class="card-title">Nuevo turno</h2>
 
-    <label>Lugar / objetivo</label>
-    <input type="text" id="lugar" placeholder="Ej: Edificio San Martín">
+      <label class="field-label">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.1 7-11a7 7 0 1 0-14 0c0 4.9 7 11 7 11z"/><circle cx="12" cy="10" r="2.4"/></svg>
+        Lugar / objetivo
+      </label>
+      <input type="text" id="lugar" placeholder="Ej: Edificio San Martín">
 
-    <label>Fecha</label>
-    <input type="date" id="fecha">
+      <label class="field-label">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M8 3v4"/><path d="M16 3v4"/></svg>
+        Fecha
+      </label>
+      <input type="date" id="fecha">
 
-    <div class="fila">
-      <div>
-        <label>Hora entrada</label>
-        <input type="time" id="horaEntrada" value="20:00">
-      </div>
-      <div>
-        <label>Hora salida</label>
-        <input type="time" id="horaSalida" value="06:00">
+      <div class="fila">
+        <div>
+          <label class="field-label entrada">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+            Hora entrada
+          </label>
+          <input type="time" id="horaEntrada" value="20:00">
+        </div>
+        <div>
+          <label class="field-label salida">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+            Hora salida
+          </label>
+          <input type="time" id="horaSalida" value="06:00">
+        </div>
       </div>
     </div>
 
-    <div class="resultado" id="resultado" style="display:none">
-      <div class="fila-resultado">
-        <span>Total del turno</span>
-        <strong id="totalTurno">0 hs</strong>
+    <div class="card resultado" id="resultado" style="display:none">
+      <div class="stats-grid">
+        <div class="stat">
+          <span class="stat-label">Total turno</span>
+          <strong id="totalTurno" class="stat-value azul">0 hs</strong>
+        </div>
+        <div class="stat">
+          <span class="stat-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+            Nocturnas
+          </span>
+          <strong id="horasNocturnas" class="stat-value violeta">0 hs</strong>
+        </div>
+        <div class="stat">
+          <span class="stat-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.9 6.3L22 9l-5 4.9 1.2 7.1L12 17.8 5.8 21l1.2-7.1L2 9l7.1-.7L12 2z"/></svg>
+            Extra semana
+          </span>
+          <strong id="horasExtraTurno" class="stat-value naranja">0 hs</strong>
+        </div>
       </div>
-      <div class="fila-resultado sub">
-        <span>Horas nocturnas (22 a 6)</span>
-        <strong id="horasNocturnas">0 hs</strong>
-      </div>
+      <p id="avisoExtra" class="aviso" style="display:none"></p>
     </div>
 
-    <div id="avisoExtra" class="aviso" style="display:none"></div>
-
-    <div class="caja-pregunta">
+    <div class="card caja-pregunta">
       <label class="check">
         <input type="checkbox" id="pasoAlgo">
+        <span class="check-box"></span>
         ¿Pasó algo en el turno?
       </label>
       <textarea id="nota" placeholder="Contá qué pasó (obligatorio si marcaste que pasó algo)" style="display:none"></textarea>
@@ -63,23 +111,29 @@
     <button id="btnGuardarTurno" class="btn-principal">Guardar turno</button>
     <button id="btnGuardarFranco" class="btn-secundario">Marcar este día como franco</button>
 
-    <h3>Resumen</h3>
-    <div class="grid-resumen">
-      <div class="metrica">
-        <span>Horas semana</span>
-        <strong id="resHorasSemana">0</strong>
-      </div>
-      <div class="metrica">
-        <span>Extra semana</span>
-        <strong id="resExtraSemana">0</strong>
-      </div>
-      <div class="metrica">
-        <span>Horas del mes</span>
-        <strong id="resHorasMes">0</strong>
-      </div>
-      <div class="metrica">
-        <span>Francos del mes</span>
-        <strong id="resFrancosMes">0</strong>
+    <div class="card">
+      <h3 class="card-subtitle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg>
+        Resumen
+      </h3>
+      <div class="grid-resumen">
+        <div class="metrica verde">
+          <span>Horas semana</span>
+          <strong id="resHorasSemana">0</strong>
+          <div class="barra"><div class="barra-fill" id="barraSemana"></div></div>
+        </div>
+        <div class="metrica naranja">
+          <span>Extra semana</span>
+          <strong id="resExtraSemana">0</strong>
+        </div>
+        <div class="metrica azul">
+          <span>Horas del mes</span>
+          <strong id="resHorasMes">0</strong>
+        </div>
+        <div class="metrica violeta">
+          <span>Francos del mes</span>
+          <strong id="resFrancosMes">0</strong>
+        </div>
       </div>
     </div>
 
@@ -88,15 +142,17 @@
   <!-- ===== PANTALLA: HISTORIAL ===== -->
   <section id="pantallaHistorial" class="pantalla oculta">
 
-    <h2>Historial</h2>
+    <div class="card">
+      <h2 class="card-title">Historial</h2>
 
-    <div class="fila">
-      <input type="date" id="filtroDesde">
-      <input type="date" id="filtroHasta">
+      <div class="fila">
+        <input type="date" id="filtroDesde">
+        <input type="date" id="filtroHasta">
+      </div>
+      <input type="text" id="filtroLugar" placeholder="Buscar por lugar...">
+
+      <button id="btnExportarPDF" class="btn-pdf">Exportar a PDF</button>
     </div>
-    <input type="text" id="filtroLugar" placeholder="Buscar por lugar...">
-
-    <button id="btnExportarPDF" class="btn-secundario">Exportar a PDF</button>
 
     <div id="listaHistorial" class="lista-historial"></div>
 
