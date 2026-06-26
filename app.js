@@ -21,17 +21,13 @@ function calcularHoras(fecha, horaEntrada, horaSalida) {
   let inicio = new Date(`${fecha}T${horaEntrada}`);
   let fin = new Date(`${fecha}T${horaSalida}`);
   if (fin <= inicio) {
-    fin.setDate(fin.getDate() + 1); // cruza la medianoche
+    fin.setDate(fin.getDate() + 1);
   }
   const totalHoras = (fin - inicio) / 3600000;
   const horasNocturnas = calcularHorasNocturnas(inicio, fin);
   return { totalHoras, horasNocturnas, inicio, fin };
 }
 
-// Suma las horas que caen entre las 22:00 y las 06:00, día por día.
-// Arrancamos a revisar desde un día ANTES del inicio del turno, porque
-// si el turno empieza de madrugada (ej: 00:30 o 05:00), esas horas pertenecen
-// a la franja nocturna que arrancó el día anterior a las 22:00.
 function calcularHorasNocturnas(inicio, fin) {
   let total = 0;
   let dia = new Date(inicio.getFullYear(), inicio.getMonth(), inicio.getDate() - 1);
@@ -55,19 +51,16 @@ function calcularHorasNocturnas(inicio, fin) {
   return total;
 }
 
-// Devuelve la clave "año-semana" (lunes a domingo) de una fecha
 function claveSemana(fechaStr) {
   const d = new Date(fechaStr + "T00:00:00");
-  const diaSemana = (d.getDay() + 6) % 7; // lunes = 0
-  d.setDate(d.getDate() - diaSemana); // retrocede al lunes de esa semana
+  const diaSemana = (d.getDay() + 6) % 7;
+  d.setDate(d.getDate() - diaSemana);
   return d.toISOString().slice(0, 10);
 }
 
 function claveMes(fechaStr) {
-  return fechaStr.slice(0, 7); // "2026-06"
+  return fechaStr.slice(0, 7);
 }
-
-// ---------- Resumen ----------
 
 function calcularResumen(turnos, fechaReferencia) {
   const semanaRef = claveSemana(fechaReferencia);
@@ -111,7 +104,6 @@ const elAvisoExtra = document.getElementById("avisoExtra");
 const elPasoAlgo = document.getElementById("pasoAlgo");
 const elNota = document.getElementById("nota");
 
-// Fecha de hoy por defecto
 elFecha.value = new Date().toISOString().slice(0, 10);
 
 function actualizarVistaPrevia() {
@@ -126,7 +118,6 @@ function actualizarVistaPrevia() {
   elTotalTurno.textContent = redondear(totalHoras) + " hs";
   elHorasNocturnas.textContent = redondear(horasNocturnas) + " hs";
 
-  // Simula sumar este turno a la semana, para mostrar la extra y el aviso
   const turnos = cargarTurnos();
   const resumen = calcularResumen(turnos, fecha);
   const semanaConEsteTurno = resumen.horasSemana + totalHoras;
@@ -183,7 +174,6 @@ document.getElementById("btnGuardarTurno").addEventListener("click", () => {
   });
   guardarTurnos(turnos);
 
-  // Limpiar formulario
   document.getElementById("lugar").value = "";
   elPasoAlgo.checked = false;
   elNota.value = "";
@@ -236,12 +226,10 @@ const elFiltroDesde = document.getElementById("filtroDesde");
 const elFiltroHasta = document.getElementById("filtroHasta");
 const elFiltroLugar = document.getElementById("filtroLugar");
 
-// Devuelve los turnos guardados aplicando los filtros activos.
-// La usan tanto la lista en pantalla como el exportador de PDF.
 function obtenerTurnosFiltrados() {
   const turnos = cargarTurnos()
     .slice()
-    .sort((a, b) => (a.fecha < b.fecha ? 1 : -1)); // más reciente primero
+    .sort((a, b) => (a.fecha < b.fecha ? 1 : -1));
 
   const desde = elFiltroDesde.value;
   const hasta = elFiltroHasta.value;
@@ -294,8 +282,6 @@ function renderizarHistorial() {
     elListaHistorial.appendChild(item);
   });
 }
-
-// ---------- Detalle, edición y borrado de un turno ----------
 
 function mostrarDetalle(t) {
   elDetalleTurno.style.display = "block";
@@ -565,7 +551,6 @@ tabHistorial.addEventListener("click", () => {
 
 actualizarResumen();
 
-// Registrar el service worker para poder instalar la app (PWA)
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("sw.js").catch(() => {});
