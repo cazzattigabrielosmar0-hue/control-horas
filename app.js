@@ -356,6 +356,7 @@ function actualizarResumen() {
   document.getElementById("resExtraSemana").textContent = redondear(resumen.extraSemana);
   document.getElementById("resHorasMes").textContent = redondear(resumen.horasMes);
   document.getElementById("resFrancosMes").textContent = resumen.francosMes;
+   document.getElementById("resHorasNocturnas").textContent = redondear(resumen.horasNocturnasMes);
 
   const pct = Math.min(100, (resumen.horasSemana / 48) * 100);
   document.getElementById("barraSemana").style.width = pct + "%";
