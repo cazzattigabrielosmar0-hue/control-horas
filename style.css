@@ -511,3 +511,32 @@ textarea {
   color: var(--text-secondary);
   border-color: var(--card-border);
 }
+
+.aviso-error {
+  background: rgba(248, 113, 113, 0.1);
+  color: var(--rojo);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 14px 0 0;
+  font-size: 12px;
+  text-align: center;
+}
+
+.link-alternar {
+  text-align: center;
+  font-size: 13px;
+  color: var(--azul-claro);
+  margin: 16px 0 0;
+  cursor: pointer;
+}
+
+#btnCerrarSesion {
+  background: none;
+  border: 1px solid var(--card-border);
+  cursor: pointer;
+}
+
+#btnCerrarSesion svg {
+  width: 16px;
+  height: 16px;
+}
