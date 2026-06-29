@@ -4,15 +4,158 @@
 // no necesita internet ni servidor (excepto para exportar a PDF).
 // ============================================
 
-const STORAGE_KEY = "turnos_guardia";
+// ============================================
+// LOGIN - varios usuarios en el mismo celular
+// Cada usuario tiene su propio usuario+clave y sus
+// propios turnos guardados, separados de los demás.
+// No hay servidor: el usuario/clave se valida contra
+// lo guardado en este mismo celular (localStorage).
+// ============================================
+
+const USUARIOS_KEY = "ch_usuarios";      // lista de usuarios registrados en este celular
+const SESION_KEY = "ch_usuario_actual";  // quién inició sesión ahora (dura mientras la app esté abierta)
+
+function cargarUsuarios() {
+  const data = localStorage.getItem(USUARIOS_KEY);
+  return data ? JSON.parse(data) : {};
+}
+
+function guardarUsuarios(usuarios) {
+  localStorage.setItem(USUARIOS_KEY, JSON.stringify(usuarios));
+}
+
+function obtenerUsuarioActual() {
+  return sessionStorage.getItem(SESION_KEY);
+}
+
+function iniciarSesionComo(usuario) {
+  sessionStorage.setItem(SESION_KEY, usuario);
+}
+
+function cerrarSesionUsuario() {
+  sessionStorage.removeItem(SESION_KEY);
+}
+
+// Cada usuario guarda sus turnos en su propia "carpeta" de localStorage
+function claveAlmacenamientoTurnos() {
+  return "turnos_guardia_" + obtenerUsuarioActual();
+}
 
 function cargarTurnos() {
-  const data = localStorage.getItem(STORAGE_KEY);
+  const data = localStorage.getItem(claveAlmacenamientoTurnos());
   return data ? JSON.parse(data) : [];
 }
 
 function guardarTurnos(turnos) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(turnos));
+  localStorage.setItem(claveAlmacenamientoTurnos(), JSON.stringify(turnos));
+}
+
+// ---------- Elementos de la pantalla de login ----------
+
+const elPantallaLogin = document.getElementById("pantallaLogin");
+const elContenidoApp = document.getElementById("contenidoApp");
+const elLoginTitulo = document.getElementById("loginTitulo");
+const elLoginUsuario = document.getElementById("loginUsuario");
+const elLoginClave = document.getElementById("loginClave");
+const elLoginConfirmarContenedor = document.getElementById("loginConfirmarContenedor");
+const elLoginConfirmarClave = document.getElementById("loginConfirmarClave");
+const elLoginError = document.getElementById("loginError");
+const elBtnLogin = document.getElementById("btnLogin");
+const elLinkAlternarModo = document.getElementById("linkAlternarModo");
+const elSaludoUsuario = document.getElementById("saludoUsuario");
+const elBtnCerrarSesion = document.getElementById("btnCerrarSesion");
+
+let modoRegistro = false;
+
+function mostrarErrorLogin(msg) {
+  elLoginError.style.display = "block";
+  elLoginError.textContent = msg;
+}
+
+function ocultarErrorLogin() {
+  elLoginError.style.display = "none";
+}
+
+function actualizarVistaLogin() {
+  ocultarErrorLogin();
+  elLoginClave.value = "";
+  elLoginConfirmarClave.value = "";
+  if (modoRegistro) {
+    elLoginTitulo.textContent = "Crear cuenta";
+    elLoginConfirmarContenedor.classList.remove("oculta");
+    elBtnLogin.textContent = "Crear cuenta";
+    elLinkAlternarModo.textContent = "¿Ya tenés cuenta? Iniciar sesión";
+  } else {
+    elLoginTitulo.textContent = "Iniciar sesión";
+    elLoginConfirmarContenedor.classList.add("oculta");
+    elBtnLogin.textContent = "Ingresar";
+    elLinkAlternarModo.textContent = "¿No tenés cuenta? Creá una nueva";
+  }
+}
+
+elLinkAlternarModo.addEventListener("click", () => {
+  modoRegistro = !modoRegistro;
+  actualizarVistaLogin();
+});
+
+elBtnLogin.addEventListener("click", () => {
+  const usuario = elLoginUsuario.value.trim().toLowerCase();
+  const clave = elLoginClave.value;
+  const usuarios = cargarUsuarios();
+
+  if (!usuario || !clave) {
+    mostrarErrorLogin("Completá usuario y clave.");
+    return;
+  }
+
+  if (modoRegistro) {
+    const confirmar = elLoginConfirmarClave.value;
+    if (usuarios[usuario]) {
+      mostrarErrorLogin("Ese usuario ya existe en este celular. Elegí otro nombre o iniciá sesión.");
+      return;
+    }
+    if (clave.length < 4) {
+      mostrarErrorLogin("La clave tiene que tener al menos 4 caracteres.");
+      return;
+    }
+    if (clave !== confirmar) {
+      mostrarErrorLogin("Las claves no coinciden.");
+      return;
+    }
+    usuarios[usuario] = clave;
+    guardarUsuarios(usuarios);
+    iniciarSesionComo(usuario);
+    mostrarApp();
+  } else {
+    if (!usuarios[usuario] || usuarios[usuario] !== clave) {
+      mostrarErrorLogin("Usuario o clave incorrectos.");
+      return;
+    }
+    iniciarSesionComo(usuario);
+    mostrarApp();
+  }
+});
+
+elBtnCerrarSesion.addEventListener("click", () => {
+  cerrarSesionUsuario();
+  mostrarLogin();
+});
+
+function mostrarApp() {
+  const usuario = obtenerUsuarioActual();
+  elPantallaLogin.classList.add("oculta");
+  elContenidoApp.classList.remove("oculta");
+  elSaludoUsuario.textContent = "Hola, " + usuario;
+  actualizarResumen();
+  renderizarHistorial();
+}
+
+function mostrarLogin() {
+  elPantallaLogin.classList.remove("oculta");
+  elContenidoApp.classList.add("oculta");
+  elLoginUsuario.value = "";
+  modoRegistro = false;
+  actualizarVistaLogin();
 }
 
 // ---------- Cálculo de horas ----------
@@ -459,6 +602,9 @@ function exportarHistorialPDF() {
 
   doc.setFontSize(10);
   doc.setTextColor(100);
+  doc.text(`Guardia: ${obtenerUsuarioActual()}`, 14, y);
+  y += 6;
+
   const desde = elFiltroDesde.value || "sin filtro";
   const hasta = elFiltroHasta.value || "sin filtro";
   doc.text(`Rango: ${desde} a ${hasta}`, 14, y);
@@ -549,7 +695,12 @@ tabHistorial.addEventListener("click", () => {
 // INICIO
 // ============================================
 
-actualizarResumen();
+if (obtenerUsuarioActual() && cargarUsuarios()[obtenerUsuarioActual()] !== undefined) {
+  mostrarApp();
+} else {
+  cerrarSesionUsuario();
+  mostrarLogin();
+}
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
