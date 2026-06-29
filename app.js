@@ -220,12 +220,14 @@ function calcularResumen(turnos, fechaReferencia) {
     if (claveMes(t.fecha) === mesRef) {
       if (t.franco) francosMes++;
       else horasMes += t.totalHoras;
+       horasNocturnasMes += t.horasNocturnas;
+    }
     }
   });
 
   const extraSemana = Math.max(0, horasSemana - 48);
 
-  return { horasSemana, extraSemana, horasMes, francosMes };
+ return { horasSemana, extraSemana, horasMes, francosMes, horasNocturnasMes };
 }
 
 function redondear(n) {
