@@ -1,4 +1,4 @@
-const CACHE_NAME = "control-horas-v8";
+const CACHE_NAME = "control-horas-v9";
 const ARCHIVOS = ["index.html", "style.css", "app.js", "manifest.json"];
 
 self.addEventListener("install", event => {
