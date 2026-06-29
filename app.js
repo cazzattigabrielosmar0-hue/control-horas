@@ -212,7 +212,7 @@ function calcularResumen(turnos, fechaReferencia) {
   let horasSemana = 0;
   let horasMes = 0;
   let francosMes = 0;
-
+  let horasNocturnasMes = 0;
   turnos.forEach(t => {
     if (claveSemana(t.fecha) === semanaRef && !t.franco) {
       horasSemana += t.totalHoras;
