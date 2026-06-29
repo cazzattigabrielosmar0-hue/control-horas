@@ -222,7 +222,6 @@ function calcularResumen(turnos, fechaReferencia) {
       else horasMes += t.totalHoras;
        horasNocturnasMes += t.horasNocturnas;
     }
-    }
   });
 
   const extraSemana = Math.max(0, horasSemana - 48);
