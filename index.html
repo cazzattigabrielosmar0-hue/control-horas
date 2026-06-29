@@ -12,6 +12,33 @@
 
 <div class="app">
 
+  <!-- ===== PANTALLA: LOGIN / CREAR CUENTA ===== -->
+  <section id="pantallaLogin" class="pantalla">
+    <div class="card">
+      <h2 class="card-title" id="loginTitulo">Iniciar sesión</h2>
+      <p style="font-size:12px;color:var(--text-secondary);margin:-8px 0 14px">Control de Horas</p>
+
+      <label class="field-label">Usuario</label>
+      <input type="text" id="loginUsuario" placeholder="Ej: gabi">
+
+      <label class="field-label">Clave</label>
+      <input type="password" id="loginClave" placeholder="Tu clave">
+
+      <div id="loginConfirmarContenedor" class="oculta">
+        <label class="field-label">Confirmar clave</label>
+        <input type="password" id="loginConfirmarClave" placeholder="Repetí la clave">
+      </div>
+
+      <p id="loginError" class="aviso-error" style="display:none"></p>
+
+      <button id="btnLogin" class="btn-principal">Ingresar</button>
+      <p id="linkAlternarModo" class="link-alternar">¿No tenés cuenta? Creá una nueva</p>
+    </div>
+  </section>
+
+  <!-- ===== CONTENIDO PRINCIPAL (visible solo con sesión iniciada) ===== -->
+  <div id="contenidoApp" class="oculta">
+
   <header class="topbar">
     <div class="brand">
       <span class="brand-icon" aria-hidden="true">
@@ -23,15 +50,16 @@
       </span>
       <div>
         <h1>Control de Horas</h1>
-        <p class="brand-sub">Seguimiento de turnos</p>
+        <p class="brand-sub" id="saludoUsuario">Seguimiento de turnos</p>
       </div>
     </div>
-    <span class="brand-clock" aria-hidden="true">
+    <button id="btnCerrarSesion" class="brand-clock" title="Cerrar sesión" aria-label="Cerrar sesión">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="9"/>
-        <path d="M12 7v5l3 2"/>
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <path d="M16 17l5-5-5-5"/>
+        <path d="M21 12H9"/>
       </svg>
-    </span>
+    </button>
   </header>
 
   <nav class="tabs">
@@ -159,6 +187,9 @@
     <div id="detalleTurno" class="detalle-turno" style="display:none"></div>
 
   </section>
+
+  </div>
+  <!-- cierra #contenidoApp -->
 
 </div>
 
